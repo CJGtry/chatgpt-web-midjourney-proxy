@@ -3,6 +3,7 @@ import type { DataTableColumns } from 'naive-ui'
 import { computed, h, ref, watch } from 'vue'
 import { NButton, NCard, NDataTable, NDivider, NInput, NList, NListItem, NModal, NPopconfirm, NSpace, NTabPane, NTabs, NThing, useMessage } from 'naive-ui'
 import PromptRecommend from '../../../assets/recommend.json'
+import defaultPromptList from '../../../assets/localPrompt.json'
 import { SvgIcon } from '..'
 import { usePromptStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
@@ -89,19 +90,32 @@ const setDownloadURL = (url: string) => {
 // 控制 input 按钮
 const inputStatus = computed (() => tempPromptKey.value.trim().length < 1 || tempPromptValue.value.trim().length < 1)
 
-// Prompt模板相关操作
-const addPromptTemplate = () => {
+// 处理prompt模板
+const handlePromptTemplate = (tmpPrompt: { [key: string]: any }) => {
   for (const i of promptList.value) {
-    if (i.key === tempPromptKey.value) {
+    if (i.key === tmpPrompt.key) {
       message.error(t('store.addRepeatTitleTips'))
       return
     }
-    if (i.value === tempPromptValue.value) {
-      message.error(t('store.addRepeatContentTips', { msg: tempPromptKey.value }))
+    if (i.value === tmpPrompt.value) {
+      message.error(t('store.addRepeatContentTips', { msg: tmpPrompt.key }))
       return
     }
   }
-  promptList.value.unshift({ key: tempPromptKey.value, value: tempPromptValue.value } as never)
+  promptList.value.unshift({ key: tmpPrompt.key, value: tmpPrompt.value } as never)
+}
+
+// 设置默认promptList
+const setDefaultPromptList = () => {
+  defaultPromptList.forEach((item) => {
+    handlePromptTemplate(item)
+  })
+}
+setDefaultPromptList()
+
+// Prompt模板相关操作
+const addPromptTemplate = () => {
+  handlePromptTemplate({ key: tempPromptKey.value, value: tempPromptValue.value })
   message.success(t('common.addSuccess'))
   changeShowModal('add')
 }
@@ -241,7 +255,6 @@ const downloadPromptTemplate = async () => {
 // 移动端自适应相关
 const renderTemplate = () => {
   const [keyLimit, valueLimit] = isMobile.value ? [10, 30] : [15, 50]
-
   return promptList.value.map((item: { key: string; value: string }) => {
     return {
       renderKey: item.key.length <= keyLimit ? item.key : `${item.key.substring(0, keyLimit)}...`,
