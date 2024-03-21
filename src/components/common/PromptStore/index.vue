@@ -91,14 +91,14 @@ const setDownloadURL = (url: string) => {
 const inputStatus = computed (() => tempPromptKey.value.trim().length < 1 || tempPromptValue.value.trim().length < 1)
 
 // 处理prompt模板
-const handlePromptTemplate = (tmpPrompt: { [key: string]: any }) => {
+const handlePromptTemplate = (tmpPrompt: { [key: string]: any }, showMsg = true) => {
   for (const i of promptList.value) {
     if (i.key === tmpPrompt.key) {
-      message.error(t('store.addRepeatTitleTips'))
+      showMsg && message.error(t('store.addRepeatTitleTips'))
       return
     }
     if (i.value === tmpPrompt.value) {
-      message.error(t('store.addRepeatContentTips', { msg: tmpPrompt.key }))
+      showMsg && message.error(t('store.addRepeatContentTips', { msg: tmpPrompt.key }))
       return
     }
   }
@@ -108,7 +108,7 @@ const handlePromptTemplate = (tmpPrompt: { [key: string]: any }) => {
 // 设置默认promptList
 const setDefaultPromptList = () => {
   defaultPromptList.forEach((item) => {
-    handlePromptTemplate(item)
+    handlePromptTemplate(item, false)
   })
 }
 setDefaultPromptList()
